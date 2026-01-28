@@ -35,6 +35,22 @@
             text-shadow: 4px 4px 0px rgba(0,0,0,0.2);
         }
 
+        /* NEW STYLE FOR ITEM NAMES */
+        .item-text-stroke {
+            font-family: 'Fredoka One', cursive;
+            color: white;
+            /* Simulating stroke for better readability across browsers */
+            text-shadow: 
+                -1px -1px 0 #000,  
+                 1px -1px 0 #000,
+                -1px  1px 0 #000,
+                 1px  1px 0 #000,
+                 2px 2px 0px rgba(0,0,0,0.25);
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            line-height: 1.1;
+        }
+
         /* Card 3D effect */
         .card-container {
             transition: transform 0.1s;
@@ -248,8 +264,8 @@
                         <img src="${item.img}" class="w-full h-full object-contain p-1" onerror="this.src='https://placehold.co/150x150?text=Error'">
                     </div>
                     
-                    <div class="w-full h-10 flex items-center justify-center px-1">
-                         <span class="text-gray-800 font-bold text-xs uppercase text-center leading-tight game-font">${item.name}</span>
+                    <div class="w-full min-h-[2.5rem] flex items-center justify-center px-1 py-1">
+                         <span class="item-text-stroke uppercase text-center leading-tight">${item.name}</span>
                     </div>
 
                     <div class="w-full mt-auto">
