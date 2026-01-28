@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Steal a Brainrot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #fca5a5;
+            background-image: 
+                linear-gradient(45deg, #fbbf24 25%, transparent 25%), 
+                linear-gradient(-45deg, #fbbf24 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #fbbf24 75%), 
+                linear-gradient(-45deg, transparent 75%, #fbbf24 75%);
+            background-size: 40px 40px;
+            background-position: 0 0, 0 20px, 20px -20px, -20px 0px; 
+            overflow-x: hidden;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .game-font {
+            font-family: 'Fredoka One', cursive;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.2);
+        }
+
+        .title-text {
+            font-family: 'Fredoka One', cursive;
+            -webkit-text-stroke: 1px black; /* Black outline */
+            text-shadow: 4px 4px 0px rgba(0,0,0,0.2);
+        }
+
+        /* Card 3D effect */
+        .card-container {
+            transition: transform 0.1s;
+        }
+        .card-container:active {
+            transform: scale(0.95);
+        }
+
+        /* 3D Button styles */
+        .btn-3d {
+            border-bottom: 6px solid rgba(0,0,0,0.2);
+            transition: all 0.1s;
+        }
+        .btn-3d:active {
+            border-bottom-width: 0px;
+            transform: translateY(6px);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.2); 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.2); 
+            border-radius: 4px;
+        }
+
+        /* Confetti Animation */
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            animation: fall linear forwards;
+        }
+        @keyframes fall {
+            to { transform: translateY(100vh) rotate(720deg); }
+        }
+
+        /* Modal Transitions */
+        .modal-enter { opacity: 0; transform: scale(0.9); }
+        .modal-enter-active { opacity: 1; transform: scale(1); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .modal-exit { opacity: 1; transform: scale(1); }
+        .modal-exit-active { opacity: 0; transform: scale(0.9); transition: all 0.2s ease-in; }
+
+        /* Loader Bar */
+        .progress-stripes {
+            background-image: linear-gradient(
+                45deg,
+                rgba(255, 255, 255, 0.15) 25%,
+                transparent 25%,
+                transparent 50%,
+                rgba(255, 255, 255, 0.15) 50%,
+                rgba(255, 255, 255, 0.15) 75%,
+                transparent 75%,
+                transparent
+            );
+            background-size: 1rem 1rem;
+            animation: progress-stripes 1s linear infinite;
+        }
+
+        @keyframes progress-stripes {
+            from { background-position: 1rem 0; }
+            to { background-position: 0 0; }
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col items-center">
+
+    <!-- Header -->
+    <div class="w-full pt-6 pb-4 text-center z-10">
+        <h1 class="text-5xl text-white uppercase title-text leading-tight">
+            STEAL A<br>BRAINROT
+        </h1>
+    </div>
+
+    <!-- Main Grid Content -->
+    <div class="flex-1 w-full max-w-md overflow-y-auto px-4 pb-24" id="grid-container">
+        <!-- Grid items will be injected here by JS -->
+        <div class="grid grid-cols-2 gap-4" id="items-grid"></div>
+    </div>
+
+    <!-- Bottom Action Bar -->
+    <div class="fixed bottom-0 w-full bg-blue-400 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-20 border-t-4 border-blue-500">
+        <div class="max-w-md mx-auto flex justify-between items-center">
+            <div class="text-white text-2xl game-font drop-shadow-md">
+                SELECT: <span id="select-count">0</span>
+            </div>
+            <button onclick="openModal()" class="bg-blue-600 hover:bg-blue-500 text-white text-xl game-font py-2 px-8 rounded-xl btn-3d uppercase">
+                Continue
+            </button>
+        </div>
+    </div>
+
+    <!-- Overlay / Modal System -->
+    <div id="modal-overlay" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center backdrop-blur-sm">
+        
+        <!-- Step 1: Input Username -->
+        <div id="modal-step-1" class="bg-gray-800 w-11/12 max-w-sm rounded-3xl p-6 border-4 border-gray-600 shadow-2xl transform transition-all duration-300">
+            <h2 class="text-white text-2xl font-bold mb-2 text-center">Find your account</h2>
+            <p class="text-gray-400 text-sm mb-4 text-center">Enter your Roblox username</p>
+            
+            <div class="relative mb-4">
+                <input type="text" id="username-input" class="w-full bg-gray-700 text-white text-lg font-bold py-4 px-4 rounded-xl border-2 border-gray-600 focus:border-blue-500 focus:outline-none placeholder-gray-500 uppercase text-center" placeholder="USERNAME">
+            </div>
+
+            <!-- Search Button -->
+            <button id="search-btn" onclick="searchUser()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl btn-3d uppercase text-lg">
+                Search
+            </button>
+
+            <!-- Search Progress (Hidden by default) -->
+            <div id="search-progress-container" class="hidden w-full mt-2">
+                <div class="w-full bg-gray-700 rounded-full h-4 mb-2 overflow-hidden border border-gray-600">
+                    <div id="search-progress-bar" class="bg-yellow-400 h-4 rounded-full w-0 progress-stripes transition-all duration-100 ease-out"></div>
+                </div>
+                <p id="search-status-text" class="text-yellow-400 text-center font-bold text-xs uppercase tracking-wider">Searching Database...</p>
+            </div>
+        </div>
+
+        <!-- Step 2: User Found -->
+        <div id="modal-step-2" class="bg-gray-800 w-11/12 max-w-sm rounded-3xl p-6 border-4 border-gray-600 shadow-2xl hidden text-center">
+            <h2 class="text-white text-2xl font-bold mb-4">User Found</h2>
+            
+            <div class="bg-gray-700 rounded-2xl p-4 mb-4 flex flex-col items-center">
+                <div class="w-20 h-20 bg-gray-500 rounded-full mb-2 overflow-hidden border-4 border-gray-600 bg-white">
+                    <!-- Updated Avatar Image -->
+                    <img src="https://tr.rbxcdn.com/30DAY-AvatarHeadshot-B701C1053DF7E8C16EA1962AF9313760-Png/150/150/AvatarHeadshot/Webp/noFilter" alt="Avatar" class="w-full h-full object-cover">
+                </div>
+                <div class="text-gray-400 text-xs uppercase mb-1">Username:</div>
+                <div id="found-username" class="text-white text-xl font-bold uppercase">NUMBLE.BRAIN.67</div>
+            </div>
+
+            <button onclick="startSync()" class="w-full bg-green-500 hover:bg-green-400 text-white font-bold py-3 rounded-xl btn-3d uppercase text-lg shadow-lg">
+                Claim for this user
+            </button>
+        </div>
+
+        <!-- Step 3: Syncing / Loading -->
+        <div id="modal-step-3" class="bg-gray-900 w-11/12 max-w-sm rounded-3xl p-8 border-4 border-purple-500 shadow-2xl hidden text-center relative overflow-hidden">
+            <!-- Background glow -->
+            <div class="absolute inset-0 bg-purple-900/20"></div>
+            
+            <h2 class="text-white text-xl font-bold mb-6 relative z-10">Syncing items with<br>Your account...</h2>
+            
+            <!-- Items Preview Row (DYNAMICALLY FILLED) -->
+            <div id="sync-items-container" class="flex justify-center flex-wrap gap-2 mb-6 relative z-10">
+                 <!-- JS will inject images here -->
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-gray-700 rounded-full h-6 mb-2 overflow-hidden border border-gray-600 relative z-10">
+                <div id="progress-bar" class="bg-blue-500 h-6 rounded-full w-0 progress-stripes transition-all duration-300 ease-out flex items-center justify-center">
+                </div>
+            </div>
+            <p id="progress-text" class="text-white font-bold text-sm relative z-10">Syncing... 0%</p>
+
+            <div id="completion-message" class="hidden mt-4">
+                 <h3 class="text-green-400 text-2xl font-bold uppercase game-font">Sync Complete!</h3>
+                 <p class="text-gray-400 text-xs mt-2">Do not refresh or close the page.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Confetti Container -->
+    <div id="confetti-container" class="fixed inset-0 pointer-events-none z-[100] hidden"></div>
+
+    <script>
+        // Data for the items (Brainrots) updated with user provided links and names
+        const items = [
+            { id: 1, name: 'Rebirth', img: 'https://i.ibb.co/mCXtD9fw/image.png' },
+            { id: 2, name: 'Trenostruzzo Turbo 4000', img: 'https://static.wikia.nocookie.net/ukradite-breinrot/images/f/ff/TrenostruzzoTurbo4000.webp/revision/latest?cb=20250907013810&path-prefix=ru' },
+            { id: 3, name: 'Trippi Troppi Troppa Trippa', img: 'https://static.wikia.nocookie.net/stealabr/images/a/a6/Trippi_Troppi_Troppa_Trippa.png/revision/latest?cb=20250902182246' },
+            { id: 4, name: 'Pakrahmatmamat', img: 'https://static.wikia.nocookie.net/ukradite-breinrot/images/9/95/Pakrahmamat.webp/revision/latest?cb=20250831183228&path-prefix=ru' },
+            { id: 5, name: 'Los Tralaleritos', img: 'https://static.wikia.nocookie.net/ukradite-breinrot/images/f/fc/LosTralaleritos.png/revision/latest/thumbnail/width/360/height/450?cb=20251128161844&path-prefix=ru' },
+            { id: 6, name: 'Job Job Job Sahur', img: 'https://tr.rbxcdn.com/180DAY-69dc73536275fb9709d6499c215247d7/420/420/BackAccessory/Webp/noFilter' },
+            { id: 7, name: 'Chicleteira Bicicleteira', img: 'https://static.wikia.nocookie.net/ukradite-breinrot/images/5/5a/Chicleteira.png/revision/latest?cb=20250924172721&path-prefix=ru' },
+            { id: 8, name: 'Extinct Matteo', img: 'https://static.wikia.nocookie.net/ukradite-breinrot/images/a/a2/ExtinctMatteo.png/revision/latest?cb=20250919195626&path-prefix=ru' },
+            { id: 9, name: 'Meowl', img: 'https://static.wikia.nocookie.net/ukradite-breinrot/images/9/92/Meowl2.png/revision/latest?cb=20251101092901&path-prefix=ru' },
+            { id: 10, name: 'Admin Lucky Block', img: 'https://tr.rbxcdn.com/180DAY-99132d9054de9d99a77b94cabac8523c/420/420/Hat/Webp/noFilter' }
+        ];
+
+        let selectedItems = new Set();
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderGrid();
+        });
+
+        function renderGrid() {
+            const grid = document.getElementById('items-grid');
+            grid.innerHTML = '';
+
+            items.forEach(item => {
+                const isSelected = selectedItems.has(item.id);
+                
+                const card = document.createElement('div');
+                card.className = `relative bg-yellow-200/90 rounded-2xl p-2 pb-2 shadow-lg border-b-4 border-yellow-600 flex flex-col items-center gap-1 card-container`;
+                card.onclick = () => toggleItem(item.id);
+
+                // Button State
+                const btnColor = isSelected ? 'bg-green-500 border-green-700' : 'bg-blue-500 border-blue-700';
+                const btnText = isSelected ? 'SELECTED' : 'SELECT';
+
+                card.innerHTML = `
+                    <div class="w-full aspect-square rounded-xl overflow-hidden border-4 border-white/20 bg-white">
+                        <img src="${item.img}" class="w-full h-full object-contain p-1" onerror="this.src='https://placehold.co/150x150?text=Error'">
+                    </div>
+                    
+                    <div class="w-full h-10 flex items-center justify-center px-1">
+                         <span class="text-gray-800 font-bold text-xs uppercase text-center leading-tight game-font">${item.name}</span>
+                    </div>
+
+                    <div class="w-full mt-auto">
+                        <button class="w-full ${btnColor} text-white font-bold py-1.5 rounded-lg border-b-4 text-sm uppercase transition-colors duration-200 shadow-md game-font tracking-wide">
+                            ${btnText}
+                        </button>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        function toggleItem(id) {
+            if (selectedItems.has(id)) {
+                selectedItems.delete(id);
+            } else {
+                selectedItems.add(id);
+            }
+            updateCounter();
+            renderGrid();
+        }
+
+        function updateCounter() {
+            document.getElementById('select-count').innerText = selectedItems.size;
+        }
+
+        /* --- Modal Logic --- */
+
+        function openModal() {
+            if (selectedItems.size === 0) {
+                // Shake the button or show tooltip (optional)
+                alert("Please select at least one item!");
+                return;
+            }
+            
+            // Reset Step 1 UI
+            document.getElementById('search-btn').classList.remove('hidden');
+            document.getElementById('search-progress-container').classList.add('hidden');
+            document.getElementById('search-progress-bar').style.width = '0%';
+            
+            document.getElementById('modal-overlay').classList.remove('hidden');
+            document.getElementById('modal-step-1').classList.remove('hidden');
+        }
+
+        function searchUser() {
+            const input = document.getElementById('username-input');
+            const searchBtn = document.getElementById('search-btn');
+            const progressContainer = document.getElementById('search-progress-container');
+            const progressBar = document.getElementById('search-progress-bar');
+            
+            if (!input.value.trim()) return;
+
+            // 1. Switch UI to Searching Mode
+            searchBtn.classList.add('hidden');
+            progressContainer.classList.remove('hidden');
+
+            // 2. Animate Search Progress
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 8; // Random speed
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    
+                    // Small delay before showing result
+                    setTimeout(() => {
+                        document.getElementById('modal-step-1').classList.add('hidden');
+                        document.getElementById('modal-step-2').classList.remove('hidden');
+                        document.getElementById('found-username').innerText = input.value;
+                    }, 400);
+                }
+                progressBar.style.width = `${progress}%`;
+            }, 100);
+        }
+
+        function startSync() {
+            document.getElementById('modal-step-2').classList.add('hidden');
+            document.getElementById('modal-step-3').classList.remove('hidden');
+
+            // Populate selected images dynamically
+            const container = document.getElementById('sync-items-container');
+            container.innerHTML = ''; // Clear existing content
+
+            items.forEach(item => {
+                if (selectedItems.has(item.id)) {
+                    const div = document.createElement('div');
+                    div.className = 'w-12 h-12 bg-gray-700 rounded-lg border-2 border-gray-500 flex items-center justify-center overflow-hidden bg-white shrink-0';
+                    div.innerHTML = `<img src="${item.img}" class="w-full h-full object-contain p-1" onerror="this.src='https://placehold.co/150x150?text=Error'">`;
+                    container.appendChild(div);
+                }
+            });
+
+            const bar = document.getElementById('progress-bar');
+            const text = document.getElementById('progress-text');
+            let progress = 0;
+
+            const interval = setInterval(() => {
+                // Random increments to look realistic
+                progress += Math.random() * 5;
+                if (progress > 100) progress = 100;
+
+                bar.style.width = `${progress}%`;
+                text.innerText = `Syncing... ${Math.floor(progress)}%`;
+
+                if (progress === 100) {
+                    clearInterval(interval);
+                    finishSync();
+                }
+            }, 150);
+        }
+
+        function finishSync() {
+            const text = document.getElementById('progress-text');
+            const msg = document.getElementById('completion-message');
+            
+            text.style.display = 'none';
+            msg.classList.remove('hidden');
+            
+            // Trigger Confetti
+            createConfetti();
+        }
+
+        /* --- Confetti Effect --- */
+        function createConfetti() {
+            const container = document.getElementById('confetti-container');
+            container.classList.remove('hidden');
+            const colors = ['#ef4444', '#3b82f6', '#22c55e', '#eab308', '#a855f7'];
+
+            for (let i = 0; i < 100; i++) {
+                const conf = document.createElement('div');
+                conf.classList.add('confetti');
+                conf.style.left = Math.random() * 100 + 'vw';
+                conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                conf.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                conf.style.opacity = Math.random();
+                container.appendChild(conf);
+            }
+        }
+
+    </script>
+</body>
+</html>
